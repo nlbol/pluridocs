@@ -1,17 +1,11 @@
 ---
-title: My Site
+title: Documentación
 toc: false
 ---
 
-This is the landing page.
-
-## Explore
+Bienvenid@ a la documentación de PluriOS, aca encontras información de PluriOS
 
 {{< cards >}}
   {{< card link="docs" title="Docs" icon="book-open" >}}
-  {{< card link="about" title="About" icon="user" >}}
 {{< /cards >}}
 
-## Documentation
-
-For more information, visit [Hextra](https://imfing.github.io/hextra).

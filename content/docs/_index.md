@@ -1,18 +1,10 @@
 ---
-title: Documentation
-next: first-page
+title: Documentación
+
 ---
 
-This is a demo of the theme's documentation layout.
+	
+## INDICE
 
-## Hello, World!
+- [Contribución](contribucion)
 
-```go {filename="main.go"}
-package main
-
-import "fmt"
-
-func main() {
-    fmt.Println("Hello, World!")
-}
-```
