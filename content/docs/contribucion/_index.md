@@ -38,36 +38,24 @@ En este directorio DEBIAN, es donde se encuentran los siguientes archivos comune
 Package: CHANGE_NAME
 Version: CHANGE_VERSION
 Architecture: CHANGE_ARCH
-Section: misc
-Priority: optional
+Section: CHANGE_SECTION
+Priority: CHANGE_PRIORITY
 Installed-Size: CHANGE_SIZE
-Maintainer: AGREGAR NOMBRE <AGREGAR CORREO>
-Copyright: AGREGAR LICENCIA
-Description: INGRESAR DESCRIPCION
+Maintainer: CHANGE_MAINTAINER
+Copyright: CHANGE_COPYRIGHT
+Description: CHANGE_DESCRIPTION
 ```
 
 > Nota.- no cambiar las variables que dicen CHANGE_* , estas variables son utilizadas en build para reemplazar la información.  
 
 
 
-#### Ejemplo 1
+## Ejemplo 1
 
 
 **Estructura de directorio**
 
-La siguiente estructura es un ejemplo de como debe obtenerse en el directorio de trabajo para que pueda empaquetarse
 
-```bash {filename=package}
-mi-programa_0.3_all/
-├── DEBIAN/
-│   ├── control   # importante
-│   ├── postinst  # opcional
-│   ├── prerm     # opcional
-│   └── md5sums   # opcional
-└── usr/
-    └── bin/
-        └── mi-programa
-```
 
 **build**
 
@@ -83,9 +71,16 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 # definir variables para el paquete
-NAME="mi-programa"      # nombre del paquete : minusculas, usar el simbolo - en vez de espacio, sin acentos
+NAME="mi-programa"      # nombre del paquete :corto, minusculas, usar el simbolo - en vez de espacio, sin acentos
 VERSION="0.3"           # version: x.x o x.x.x (recomendable)
 ARCH="amd64"            # arch: amd64, i386, all
+
+# Variables para control
+SECTION="misc"          # cambiar de acuerdo a su programa, caso contrario dejarlo en misc
+PRIORITY="optional"     # cambiar el nivel de prioridad, aunque se recomienda opcional
+MAINTAINER="User Name <email@email.com>"    # cambiar por un nombre de usuario y su correo
+COPYRIGHT="GPL3"        # solo son permitidos licencias compatibles con Software Libre
+DESCRIPTION=""          # agregar una descripción corta y breve del programa
 
 # eliminar archivos no relevantes para subir a github
 # estas instrucciones puede variar dependiendo los archivos innecesarios del proyecto
@@ -109,6 +104,12 @@ SIZE=$(du -ks --exclude=DEBIAN "$DIR_PACKAGE/" | awk '{print $1}')
 # Cambia información del archivo control como ser: nombre, versión, tamaño
 sed -i "s/CHANGE_NAME/$NAME/g" "$DIR_PACKAGE/DEBIAN/control"
 sed -i "s/CHANGE_VERSION/$VERSION/g" "$DIR_PACKAGE/DEBIAN/control"
+sed -i "s/CHANGE_ARCH/$ARCH/g" "$DIR_PACKAGE/DEBIAN/control"
+sed -i "s/CHANGE_SECTION/$SECTION/g" "$DIR_PACKAGE/DEBIAN/control"
+sed -i "s/CHANGE_PRIORITY/$PRIORITY/g" "$DIR_PACKAGE/DEBIAN/control"
+sed -i "s/CHANGE_MAINTAINER/$MAINTAINER/g" "$DIR_PACKAGE/DEBIAN/control"
+sed -i "s/CHANGE_COPYRIGHT/$COPYRIGHT/g" "$DIR_PACKAGE/DEBIAN/control"
+sed -i "s/CHANGE_DESCRIPTION/$DESCRIPTION/g" "$DIR_PACKAGE/DEBIAN/control"
 sed -i "s/CHANGE_SIZE/$SIZE/g" "$DIR_PACKAGE/DEBIAN/control"
 
 # Cambiar el nombre y versión del lanzador del programa  (si es que el programa usa un lanzador)
@@ -122,12 +123,12 @@ chown -R root:root $DIR_PACKAGE/
 dpkg-deb --build $DIR_PACKAGE/
 ```
 
-Modificar este template si es necesario.
+Modificar la plantilla si es necesario.
 
 
-#### Ejemplo 2 (usando Docker)
+## Ejemplo 2 (usando Docker)
 
-En el siguiente ejemplo, sera un build donde se requiera usar docker para hacer la compilación con X tecnologia y asi obtener el binario y posterior a ellos, 
+En el siguiente ejemplo, sera un script `build` donde se requiera usar docker para hacer la compilación con X tecnologia y asi obtener el binario compatible con PluriOS 
 
 **Estructura del directorio**
 
@@ -135,18 +136,19 @@ En el siguiente ejemplo, sera un build donde se requiera usar docker para hacer 
 ```bash {filename=mi-proyecto-git}
 .
 ├── build
+├── DEBIAN
+│   └── control
 ├── Dockerfile
-└── programa
-    └── hola-mundo.c
-
+├── programa
+│   └── hola-mundo.c
+└── usr
+    └── bin
 ```
 
 **Dockerfile**
 
-Este archivo servira como base para crear una imagen base Ubuntu:20.04 con la herramientas necesaria para compilar un proyecto.
+Este archivo servira como base para crear una imagen base Ubuntu:24.04 con las herramientas necesarias para compilar su proyecto.
 El ejemplo de muestra es de un "hola mundo" creado en C.
-
-> Nota.- el script **build** creara la nueva imagen Docker con el tag: `plurios-builder:24.04`
 
 ```Dockerfile {filename=Dockerfile}
 FROM ubuntu:24.04
@@ -159,6 +161,8 @@ WORKDIR /src
 
 CMD ["bash"]
 ```
+
+> Nota.- el script **build** creara la nueva imagen Docker con el tag: `plurios-builder:24.04` y este sera usado cuando se vuelva a ejecutar la compilación.
 
 **build**
 
@@ -176,14 +180,21 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 # definir variables para el paquete
-NAME="mi-programa"      # nombre del paquete : minusculas, usar el simbolo - en vez de espacio, sin acentos
+NAME="mi-programa"      # nombre del paquete :corto, minusculas, usar el simbolo - en vez de espacio, sin acentos
 VERSION="0.3"           # version: x.x o x.x.x (recomendable)
 ARCH="amd64"            # arch: amd64, i386, all
+
+# Variables para control
+SECTION="misc"          # cambiar de acuerdo a su programa, caso contrario dejarlo en misc
+PRIORITY="optional"     # cambiar el nivel de prioridad, aunque se recomienda opcional
+MAINTAINER="User Name <email@email.com>"    # cambiar por un nombre de usuario y su correo
+COPYRIGHT="GPL3"        # solo son permitidos licencias compatibles con Software Libre
+DESCRIPTION=""          # agregar una descripción corta y breve del programa
 
 # definir variables para docker
 IMAGE_NAME="plurios-builder:24.04"
 SRC_FILE="programa/hola-mundo.c"
-OUTPUT="./hola-mundo"
+OUTPUT="./$NAME"
 
 if [[ ! -f "$SRC_FILE" ]]; then
     echo -e "\033[0;31mError: source file not found: $SRC_FILE\033[0m"
@@ -215,7 +226,7 @@ mkdir -p $DIR_PACKAGE
 # DEBIAN es un directorio importante que contiene todos los metadatos de un paquete DEB
 cp -r DEBIAN $DIR_PACKAGE/
 cp -r usr/ $DIR_PACKAGE/                  # directorio a copiar "usr/bin/"
-cp $OUTPUT $DIR_PACKAGE/usr/bin/$NAME     # copia el binario compilado con el nombre establecido para el paquete
+cp $OUTPUT $DIR_PACKAGE/usr/bin/          # copia el binario compilado con el nombre establecido para el paquete
 
 # Calcula el tamaño en kilobytes (kB) de todo el directorio de trabajo excluyendo el directorio DEBIAN
 SIZE=$(du -ks --exclude=DEBIAN "$DIR_PACKAGE/" | awk '{print $1}')
@@ -223,6 +234,12 @@ SIZE=$(du -ks --exclude=DEBIAN "$DIR_PACKAGE/" | awk '{print $1}')
 # Cambia información del archivo control como ser: nombre, versión, tamaño
 sed -i "s/CHANGE_NAME/$NAME/g" "$DIR_PACKAGE/DEBIAN/control"
 sed -i "s/CHANGE_VERSION/$VERSION/g" "$DIR_PACKAGE/DEBIAN/control"
+sed -i "s/CHANGE_ARCH/$ARCH/g" "$DIR_PACKAGE/DEBIAN/control"
+sed -i "s/CHANGE_SECTION/$SECTION/g" "$DIR_PACKAGE/DEBIAN/control"
+sed -i "s/CHANGE_PRIORITY/$PRIORITY/g" "$DIR_PACKAGE/DEBIAN/control"
+sed -i "s/CHANGE_MAINTAINER/$MAINTAINER/g" "$DIR_PACKAGE/DEBIAN/control"
+sed -i "s/CHANGE_COPYRIGHT/$COPYRIGHT/g" "$DIR_PACKAGE/DEBIAN/control"
+sed -i "s/CHANGE_DESCRIPTION/$DESCRIPTION/g" "$DIR_PACKAGE/DEBIAN/control"
 sed -i "s/CHANGE_SIZE/$SIZE/g" "$DIR_PACKAGE/DEBIAN/control"
 
 # Cambiar el nombre y versión del lanzador del programa  (si es que el programa usa un lanzador)
