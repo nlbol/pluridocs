@@ -55,7 +55,14 @@ Description: CHANGE_DESCRIPTION
 
 **Estructura de directorio**
 
-
+```bash {filename=mi-proyecto-git}
+.
+├── build
+├── DEBIAN
+│   └── control
+└── usr
+    └── bin
+```
 
 **build**
 
@@ -72,7 +79,7 @@ fi
 
 # definir variables para el paquete
 NAME="mi-programa"      # nombre del paquete :corto, minusculas, usar el simbolo - en vez de espacio, sin acentos
-VERSION="0.3"           # version: x.x o x.x.x (recomendable)
+VERSION="0.1"           # version: x.x o x.x.x (recomendable)
 ARCH="amd64"            # arch: amd64, i386, all
 
 # Variables para control
@@ -98,6 +105,17 @@ mkdir -p $DIR_PACKAGE
 cp -r DEBIAN $DIR_PACKAGE/
 cp -r usr/ $DIR_PACKAGE/
 
+# verifica si existe un lanzador para integrarlo con su icono en formato SVG
+if [ -f $NAME.desktop ]; then
+  mkdir -p $DIR_PACKAGE/{usr/share/applications/,usr/share/icons/hicolor/scalable/apps/}
+  cp $NAME.desktop $DIR_PACKAGE/usr/share/applications/
+  cp $NAME.svg $DIR_PACKAGE/usr/share/icons/hicolor/scalable/apps/
+
+  # Cambiar el nombre y versión del lanzador del programa  (si es que el programa usa un lanzador)
+  sed -i "s/CHANGE_NAME/$NAME/g" "$DIR_PACKAGE/usr/share/applications/${NAME}.desktop"
+  sed -i "s/CHANGE_VERSION/$VERSION/g" "$DIR_PACKAGE/usr/share/applications/${NAME}.desktop"
+fi
+
 # Calcula el tamaño en kilobytes (kB) de todo el directorio de trabajo excluyendo el directorio DEBIAN
 SIZE=$(du -ks --exclude=DEBIAN "$DIR_PACKAGE/" | awk '{print $1}')
 
@@ -115,6 +133,13 @@ sed -i "s/CHANGE_SIZE/$SIZE/g" "$DIR_PACKAGE/DEBIAN/control"
 # Cambiar el nombre y versión del lanzador del programa  (si es que el programa usa un lanzador)
 # sed -i "s/CHANGE_NAME/$NAME/g" "$DIR_PACKAGE/usr/share/applications/${NAME}.desktop"
 # sed -i "s/CHANGE_VERSION/$VERSION/g" "$DIR_PACKAGE/usr/share/applications/${NAME}.desktop"
+
+# Asigna permisos de ejecución a los archivos preinst, postinst, prerm, postrm
+for script in postinst preinst postrm prerm; do
+  if [ -f "DEBIAN/$script" ]; then
+    chmod 755 DEBIAN/$script
+  fi
+done
 
 # Agregar propietarips y permisos correspondientes a los ficheros
 chown -R root:root $DIR_PACKAGE/
@@ -181,7 +206,7 @@ fi
 
 # definir variables para el paquete
 NAME="mi-programa"      # nombre del paquete :corto, minusculas, usar el simbolo - en vez de espacio, sin acentos
-VERSION="0.3"           # version: x.x o x.x.x (recomendable)
+VERSION="0.1"           # version: x.x o x.x.x (recomendable)
 ARCH="amd64"            # arch: amd64, i386, all
 
 # Variables para control
@@ -193,27 +218,29 @@ DESCRIPTION=""          # agregar una descripción corta y breve del programa
 
 # definir variables para docker
 IMAGE_NAME="plurios-builder:24.04"
-SRC_FILE="programa/hola-mundo.c"
-OUTPUT="./$NAME"
+SRC_DIR="programa"
+OUTPUT=$NAME
 
-if [[ ! -f "$SRC_FILE" ]]; then
-    echo -e "\033[0;31mError: source file not found: $SRC_FILE\033[0m"
+if [[ ! -d "$SRC_DIR" ]]; then
+    echo -e "\033[0;31mError: source folder not found: $SRC_DIR\033[0m"
     exit 1
 fi
 
 if [[ "$(docker images -q $IMAGE_NAME 2>/dev/null)" == "" ]]; then
-    echo -e "\033[0;33mBuilding Docker image '$IMAGE_NAME'...\033[0m"
+    #echo -e "\033[0;33mBuilding Docker image '$IMAGE_NAME'...\033[0m"
+    echo "Building Docker image '$IMAGE_NAME'..."
     docker build -t "$IMAGE_NAME" .
 fi
 
-echo -e "\033[0;34mCompiling $SRC_FILE...\033[0m"
+echo -e "\033[1;37mCompiling $SRC_DIR...\033[0m"
+
 docker run --rm \
-    -v "$PWD/programa":/src \
+    -v "$PWD/$SRC_DIR":/src \
     -v "$PWD":/out \
     "$IMAGE_NAME" \
-    bash -c "gcc /src/hola-mundo.c -o /out/hola-mundo"
+    bash -c "gcc /src/hola-mundo.c -o /out/$OUTPUT"
 
-echo -e "\033[0;32mBinary created: $OUTPUT\033[0m"
+echo -e "\033[0;32mBinary created: $OUTPUT\033[0m"  
 
 # Crear el nombre del directorio de trabajo 
 # Ej: mi-programa_0.3_amd64
@@ -227,6 +254,16 @@ mkdir -p $DIR_PACKAGE
 cp -r DEBIAN $DIR_PACKAGE/
 cp -r usr/ $DIR_PACKAGE/                  # directorio a copiar "usr/bin/"
 cp $OUTPUT $DIR_PACKAGE/usr/bin/          # copia el binario compilado con el nombre establecido para el paquete
+
+# verifica si existe un lanzador para integrarlo con su icono en formato SVG
+if [ -f $NAME.desktop ]; then
+  mkdir -p $DIR_PACKAGE/usr/share/applications/
+  cp $NAME.desktop $DIR_PACKAGE/usr/share/applications/
+
+  # Cambiar el nombre y versión del lanzador del programa  (si es que el programa usa un lanzador)
+  sed -i "s/CHANGE_NAME/$NAME/g" "$DIR_PACKAGE/usr/share/applications/${NAME}.desktop"
+  sed -i "s/CHANGE_VERSION/$VERSION/g" "$DIR_PACKAGE/usr/share/applications/${NAME}.desktop"
+fi
 
 # Calcula el tamaño en kilobytes (kB) de todo el directorio de trabajo excluyendo el directorio DEBIAN
 SIZE=$(du -ks --exclude=DEBIAN "$DIR_PACKAGE/" | awk '{print $1}')
@@ -242,9 +279,12 @@ sed -i "s/CHANGE_COPYRIGHT/$COPYRIGHT/g" "$DIR_PACKAGE/DEBIAN/control"
 sed -i "s/CHANGE_DESCRIPTION/$DESCRIPTION/g" "$DIR_PACKAGE/DEBIAN/control"
 sed -i "s/CHANGE_SIZE/$SIZE/g" "$DIR_PACKAGE/DEBIAN/control"
 
-# Cambiar el nombre y versión del lanzador del programa  (si es que el programa usa un lanzador)
-# sed -i "s/CHANGE_NAME/$NAME/g" "$DIR_PACKAGE/usr/share/applications/${NAME}.desktop"
-# sed -i "s/CHANGE_VERSION/$VERSION/g" "$DIR_PACKAGE/usr/share/applications/${NAME}.desktop"
+# Asigna permisos de ejecución a los archivos preinst, postinst, prerm, postrm
+for script in postinst preinst postrm prerm; do
+  if [ -f "DEBIAN/$script" ]; then
+    chmod 755 DEBIAN/$script
+  fi
+done
 
 # Agregar propietarips y permisos correspondientes a los ficheros
 chown -R root:root $DIR_PACKAGE/
