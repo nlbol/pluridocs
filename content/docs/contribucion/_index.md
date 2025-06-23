@@ -136,8 +136,8 @@ sed -i "s/CHANGE_SIZE/$SIZE/g" "$DIR_PACKAGE/DEBIAN/control"
 
 # Asigna permisos de ejecución a los archivos preinst, postinst, prerm, postrm
 for script in postinst preinst postrm prerm; do
-  if [ -f "DEBIAN/$script" ]; then
-    chmod 755 DEBIAN/$script
+  if [ -f "$DIR_PACKAGE/DEBIAN/$script" ]; then
+    chmod 755 $DIR_PACKAGE/DEBIAN/$script
   fi
 done
 
@@ -154,6 +154,20 @@ Modificar la plantilla si es necesario.
 ## Ejemplo 2 (usando Docker)
 
 En el siguiente ejemplo, sera un script `build` donde se requiera usar docker para hacer la compilación con X tecnologia y asi obtener el binario compatible con PluriOS 
+
+**Pre requisito**
+
+Es necesario tener instalado docker para usar esta opción, para ello se reduce la guía en simples pasos, copie y pegue esto en su terminal:
+
+
+```bash {filename=comando}
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+```
+
+> Guía oficial de Docker https://docs.docker.com/engine/install/ubuntu/
+
+Tome en cuenta que esta guía asume que no tiene docker instalado y es la primera vez que esta realizando estos pasos de instalación.
 
 **Estructura del directorio**
 
@@ -281,8 +295,8 @@ sed -i "s/CHANGE_SIZE/$SIZE/g" "$DIR_PACKAGE/DEBIAN/control"
 
 # Asigna permisos de ejecución a los archivos preinst, postinst, prerm, postrm
 for script in postinst preinst postrm prerm; do
-  if [ -f "DEBIAN/$script" ]; then
-    chmod 755 DEBIAN/$script
+  if [ -f "$DIR_PACKAGE/DEBIAN/$script" ]; then
+    chmod 755 $DIR_PACKAGE/DEBIAN/$script
   fi
 done
 
