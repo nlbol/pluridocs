@@ -21,12 +21,25 @@ menu:
     - name: Docs
       pageRef: /docs
       weight: 1
+<<<<<<< HEAD
+    - name: About
+      pageRef: /about
+      weight: 2
+    - name: Contact ↗
+      url: "https://plurios.openit.dev"
+      weight: 3
+=======
+>>>>>>> a690b2e533b26ab1e0ec0b4819076ff3bf3bf15a
     - name: Search
       weight: 2
       params:
         type: search
     - name: GitHub
+<<<<<<< HEAD
+      weight: 5
+=======
       weight: 3
+>>>>>>> a690b2e533b26ab1e0ec0b4819076ff3bf3bf15a
       url: "https://github.com/nlbol"
       params:
         icon: github
