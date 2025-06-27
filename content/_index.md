@@ -1,5 +1,5 @@
 ---
-title: My Site
+title: Documentación
 toc: false
 ---
 
