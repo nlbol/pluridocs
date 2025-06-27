@@ -10,9 +10,10 @@ A continuación se mostrara algunos ejemplos utiles y esenciales para que puedan
 
 ## Requisitos importantes
 
-- Todo paquete debe funcionar sobre la base de PluriOS (Ubuntu 24.04 LTS)
-- El resultado (paquete deb) del proyecto no debe superar los 99MB
-- Todo paquete debe ser compatible con las versiones de herramientas disponibles en el sistema o en su repositorio actual (Ubuntu 24.04 LTS) de PluriOS, ej: Python3, Perl, C/C++ y otros
+- Todo paquete debe funcionar sobre la base de PluriOS (Ubuntu 24.04 LTS).
+- El resultado (paquete deb) del proyecto no debe superar los 99MB.
+- Todo paquete debe ser compatible con las versiones de herramientas disponibles en el sistema o en su repositorio actual (Ubuntu 24.04 LTS) de PluriOS, ej: Python3, Perl, C/C++ y otros.
+- No se aceptaran archivos binarios (compilados/ofuscados) en el repositorio, esto como medida de seguridad para que el/los binario(s) sea(n) generado(s) desde el repositorio DEB.
 
 ## Plantillas
 
@@ -48,10 +49,22 @@ Description: CHANGE_DESCRIPTION
 
 > Nota.- no cambiar las variables que dicen CHANGE_* , estas variables son utilizadas en build para reemplazar la información.  
 
+### lanzador
 
+```bash {filename=NAME.desktop}
+Name=CHANGE_NAME
+Comment=AGREGAR UN COMENTARIO DEL PROGRAMA
+Version=CHANGE_VERSION
+Icon=CHANGE_NAME
+Exec=CHANGE_NAME
+Terminal=false
+Type=Application
+Categories=PluriOS;
+```
 
 ## Ejemplo 1
 
+Para este ejemplo, se hace referencia de que el proyecto es simplemente un archivo escrito en un lenguaje como python, perl que no requiera instrucciones de compilación y tampoco requiera el uso de librerias propias.
 
 **Estructura de directorio**
 
@@ -60,6 +73,7 @@ Description: CHANGE_DESCRIPTION
 ├── build
 ├── DEBIAN
 │   └── control
+├── mi-programa
 └── usr
     └── bin
 ```
@@ -77,17 +91,18 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
+# =================================
 # definir variables para el paquete
+# =================================
 NAME="mi-programa"      # nombre del paquete :corto, minusculas, usar el simbolo - en vez de espacio, sin acentos
 VERSION="0.1"           # version: x.x o x.x.x (recomendable)
 ARCH="amd64"            # arch: amd64, i386, all
-
-# Variables para control
 SECTION="misc"          # cambiar de acuerdo a su programa, caso contrario dejarlo en misc
 PRIORITY="optional"     # cambiar el nivel de prioridad, aunque se recomienda opcional
 MAINTAINER="User Name <email@email.com>"    # cambiar por un nombre de usuario y su correo
 COPYRIGHT="GPL3"        # solo son permitidos licencias compatibles con Software Libre
 DESCRIPTION=""          # agregar una descripción corta y breve del programa
+# =================================
 
 # eliminar archivos no relevantes para subir a github
 # estas instrucciones puede variar dependiendo los archivos innecesarios del proyecto
@@ -103,14 +118,15 @@ mkdir -p $DIR_PACKAGE
 # Copia y pega los directorios necesarios para el paquete
 # DEBIAN es un directorio importante que contiene todos los metadatos de un paquete DEB
 cp -r DEBIAN $DIR_PACKAGE/
-cp -r usr/ $DIR_PACKAGE/
+cp -r usr/ $DIR_PACKAGE/                  # directorio a copiar "usr/bin/"
+cp $OUTPUT $DIR_PACKAGE/usr/bin/          # copia el binario compilado con el nombre establecido para el paquete
 
 # verifica si existe un lanzador para integrarlo con su icono en formato SVG
-if [ -f $NAME.desktop ]; then
+if [ -f "$NAME.desktop" ] && [ -f "$NAME.svg" ]; then
   mkdir -p $DIR_PACKAGE/{usr/share/applications/,usr/share/icons/hicolor/scalable/apps/}
   cp $NAME.desktop $DIR_PACKAGE/usr/share/applications/
   cp $NAME.svg $DIR_PACKAGE/usr/share/icons/hicolor/scalable/apps/
-
+  
   # Cambiar el nombre y versión del lanzador del programa  (si es que el programa usa un lanzador)
   sed -i "s/CHANGE_NAME/$NAME/g" "$DIR_PACKAGE/usr/share/applications/${NAME}.desktop"
   sed -i "s/CHANGE_VERSION/$VERSION/g" "$DIR_PACKAGE/usr/share/applications/${NAME}.desktop"
@@ -129,10 +145,6 @@ sed -i "s/CHANGE_MAINTAINER/$MAINTAINER/g" "$DIR_PACKAGE/DEBIAN/control"
 sed -i "s/CHANGE_COPYRIGHT/$COPYRIGHT/g" "$DIR_PACKAGE/DEBIAN/control"
 sed -i "s/CHANGE_DESCRIPTION/$DESCRIPTION/g" "$DIR_PACKAGE/DEBIAN/control"
 sed -i "s/CHANGE_SIZE/$SIZE/g" "$DIR_PACKAGE/DEBIAN/control"
-
-# Cambiar el nombre y versión del lanzador del programa  (si es que el programa usa un lanzador)
-# sed -i "s/CHANGE_NAME/$NAME/g" "$DIR_PACKAGE/usr/share/applications/${NAME}.desktop"
-# sed -i "s/CHANGE_VERSION/$VERSION/g" "$DIR_PACKAGE/usr/share/applications/${NAME}.desktop"
 
 # Asigna permisos de ejecución a los archivos preinst, postinst, prerm, postrm
 for script in postinst preinst postrm prerm; do
@@ -218,20 +230,21 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
+# =================================
 # definir variables para el paquete
+# =================================
 NAME="mi-programa"      # nombre del paquete :corto, minusculas, usar el simbolo - en vez de espacio, sin acentos
 VERSION="0.1"           # version: x.x o x.x.x (recomendable)
 ARCH="amd64"            # arch: amd64, i386, all
-
-# Variables para control
 SECTION="misc"          # cambiar de acuerdo a su programa, caso contrario dejarlo en misc
 PRIORITY="optional"     # cambiar el nivel de prioridad, aunque se recomienda opcional
 MAINTAINER="User Name <email@email.com>"    # cambiar por un nombre de usuario y su correo
 COPYRIGHT="GPL3"        # solo son permitidos licencias compatibles con Software Libre
 DESCRIPTION=""          # agregar una descripción corta y breve del programa
+# ================================= 
 
 # definir variables para docker
-IMAGE_NAME="plurios-builder:24.04"
+IMAGE_NAME="plurios-builder-${NAME}:24.04"
 SRC_DIR="programa"
 OUTPUT=$NAME
 
@@ -270,11 +283,12 @@ cp -r usr/ $DIR_PACKAGE/                  # directorio a copiar "usr/bin/"
 cp $OUTPUT $DIR_PACKAGE/usr/bin/          # copia el binario compilado con el nombre establecido para el paquete
 
 # verifica si existe un lanzador para integrarlo con su icono en formato SVG
-if [ -f $NAME.desktop ]; then
-  mkdir -p $DIR_PACKAGE/usr/share/applications/
+if [ -f "$NAME.desktop" ] && [ -f "$NAME.svg" ]; then
+  mkdir -p $DIR_PACKAGE/{usr/share/applications/,usr/share/icons/hicolor/scalable/apps/}
   cp $NAME.desktop $DIR_PACKAGE/usr/share/applications/
+  cp $NAME.svg $DIR_PACKAGE/usr/share/icons/hicolor/scalable/apps/
 
-  # Cambiar el nombre y versión del lanzador del programa  (si es que el programa usa un lanzador)
+  # Cambia el nombre y versión del lanzador del programa  (si es que el programa usa un lanzador)
   sed -i "s/CHANGE_NAME/$NAME/g" "$DIR_PACKAGE/usr/share/applications/${NAME}.desktop"
   sed -i "s/CHANGE_VERSION/$VERSION/g" "$DIR_PACKAGE/usr/share/applications/${NAME}.desktop"
 fi
