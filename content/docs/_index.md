@@ -1,5 +1,5 @@
 ---
-title: Documentación
+title: PluriOS Docs
 
 ---
 
