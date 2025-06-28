@@ -66,6 +66,9 @@ chmod 755
 
 ### lanzador
 
+Esta plantilla solo es util si su programa tiene o utiliza interfaz gráfica (GUI).  
+
+
 ```bash {filename=NAME.desktop}
 Name=CHANGE_NAME
 Comment=AGREGAR UN COMENTARIO DEL PROGRAMA
@@ -76,7 +79,9 @@ Terminal=false
 Type=Application
 Categories=PluriOS;
 ```
+> **Nota.-** Solo necesita cambiar la descripción de esta plantilla, el resto de información no se debe cambiar ya que son paquetes propios que van a ser intuidos en PluriOS.
 
+El script `build` detecta automáticamente si hay un lanzador creado y si hay un icono en formato SVG para que sea incluido, si esta condición no se cumple, entonces el paquete se creara sin un lanzador. 
 ### Versionado de Software
 
 La siguiente información sera de utilidad para saber como asignar una versión para el empaquetado.
@@ -149,7 +154,7 @@ DIR_PACKAGE="${NAME}_${VERSION}_${ARCH}"
 # Crea el directorio de trabajo 
 mkdir -p $DIR_PACKAGE
 
-# Asigna permiso de ejcución al programa
+# Asigna permiso de ejecución al programa
 chmod +x $NAME
 # ================================
 # Copia y pega los directorios necesarios para el paquete
