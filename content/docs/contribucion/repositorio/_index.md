@@ -54,6 +54,17 @@ Estos archivos son instrucciones `bash scripting` para ejecutarse antes/después
 - **prerm:** Script que se ejecuta **antes** de eliminar el paquete.
 - **postrm:** Script que se ejecuta **después** de eliminar el paquete.
 
+Ejemplo que debe contener un script
+
+```bash {filename=script}
+#!/bin/bash
+
+instrucción bash 1
+instrucción bash 2
+instrucción bash 3
+
+```
+
 **Permisos**
 
 Estos archivos mencionados `preinst, postinst, prerm, postrm` deben tener el siguiente permiso utilizando `chmod` para que pueda funcionar correctamente dentro del paquete DEB.  
