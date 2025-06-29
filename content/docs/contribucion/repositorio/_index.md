@@ -16,7 +16,7 @@ A continuación se mostrara algunos ejemplos útiles y esenciales para que pueda
 
 ## Plantillas
 
-En esta sección se tendrá una muestra de los archivos "plantillas" que se puede reutilizar para crear un **paquete DEB**
+En esta sección se tendrá una muestra de los archivos "plantillas" que se puede reutilizar para crear un **paquete DEB** e información util para saber que modificar.
 
 ### DEBIAN (directorio)
 
@@ -30,6 +30,8 @@ En este directorio DEBIAN, es donde se encuentran los siguientes archivos comune
 - **md5sums**     : Sumas MD5 de los archivos incluidos en el paquete.
 
 ### control
+
+Este archivo contienen toda la información de un paquete que es esencial.
 
 ```bash {filename=control}
 Package: CHANGE_NAME
@@ -52,9 +54,10 @@ Estos archivos son instrucciones `bash scripting` para ejecutarse antes/después
 - **preinst:** Script que se ejecuta **antes** de instalar el paquete.
 - **postinst:** Script que se ejecuta **después** de instalar el paquete.
 - **prerm:** Script que se ejecuta **antes** de eliminar el paquete.
-- **postrm:** Script que se ejecuta **después** de eliminar el paquete.
+- **postrm:** Script que se ejecuta **después** de eliminar el paquete.  
 
-Ejemplo que debe contener un script
+
+Esta es la estructura de un script
 
 ```bash {filename=script}
 #!/bin/bash
@@ -65,7 +68,15 @@ instrucción bash 3
 
 ```
 
-**Permisos**
+Algunos ejemplos de instrucciones que puede ser usado:  
+- habilitar servicios con systemd por defecto.
+- crear enlaces de binarios.
+- preparar los requerimientos o configuraciones necesarias antes de instalar el paquete.
+- revertir o remover las acciones mencionadas cuando se elimina el paquete.
+- etc..
+
+
+### Permisos
 
 Estos archivos mencionados `preinst, postinst, prerm, postrm` deben tener el siguiente permiso utilizando `chmod` para que pueda funcionar correctamente dentro del paquete DEB.  
 
@@ -74,6 +85,19 @@ chmod 755
 ```
 
 > **Nota.-** El script `build` ya tiene incluido estos pasos para evitar que haya problemas en el proceso del empaquetado.
+
+### Licencia
+
+En el siguiente enlace puede encontrar una lista de Licencias que puede asignar en el paquete
+https://spdx.org/licenses/ y agregar el Identificador **(Identifier)** en el script **build** para que este pueda añadirlo en el archivo `control` , algunos ejemplos de licencia:
+
+|  Identifier  |
+|:------------:|
+|GPL-3.0-only|
+|GPL-3.0-or-later|
+|GPL-2.0-only|
+
+> **Nota.-** Use la licencia que sea compatible con Software Libre.
 
 ### lanzador
 
