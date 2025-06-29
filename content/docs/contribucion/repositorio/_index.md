@@ -21,13 +21,13 @@ En esta sección se tendrá una muestra de los archivos "plantillas" que se pued
 ### DEBIAN (directorio)
 
 En este directorio DEBIAN, es donde se encuentran los siguientes archivos comunes que todo paquete debe tener:
-- **control**     : Información del paquete (nombre, versión, descripción, dependencias, mantenedor, etc.).
-- **preinst**     : Script que se ejecuta **antes** de instalar el paquete.
-- **postinst**    : Script que se ejecuta **después** de instalar el paquete.
-- **prerm**       : Script que se ejecuta **antes** de eliminar el paquete.
-- **postrm**      : Script que se ejecuta **después** de eliminar el paquete.
-- **conffiles**   : Lista de archivos de configuración para que no se sobre-escriban en una actualización.
-- **md5sums**     : Sumas MD5 de los archivos incluidos en el paquete.
+- **control:** Contiene la información principal del paquete, como el nombre, versión, descripción, dependencias, mantenedor, sección, prioridad y arquitectura.
+
+- **conffiles:** Lista de archivos de configuración que no deben ser sobrescritos automáticamente durante una actualización.
+
+- **md5sums:** Sumas de verificación MD5 de todos los archivos instalados, utilizadas para comprobar la integridad del paquete.
+
+- **Scripts de mantenimiento:** Son scripts opcionales que permiten ejecutar acciones automáticas en diferentes etapas del ciclo de vida del paquete
 
 ### Control
 
