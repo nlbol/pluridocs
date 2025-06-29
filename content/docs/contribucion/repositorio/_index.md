@@ -29,7 +29,7 @@ En este directorio DEBIAN, es donde se encuentran los siguientes archivos comune
 - **conffiles**   : Lista de archivos de configuración para que no se sobre-escriban en una actualización.
 - **md5sums**     : Sumas MD5 de los archivos incluidos en el paquete.
 
-### control
+### Control
 
 Este archivo contienen toda la información de un paquete que es esencial.
 
@@ -47,7 +47,7 @@ Description: CHANGE_DESCRIPTION
 
 > Nota.- no cambiar las variables que dicen CHANGE_* , estas variables son utilizadas en build para reemplazar la información.  
 
-### PREINST, POSTINT, PRERM y POSTRM
+### Scripts de mantenimiento
 
 Estos archivos son instrucciones `bash scripting` para ejecutarse antes/después de la instalación/desinstalación de un paquete.  
 
@@ -168,14 +168,14 @@ fi
 # =================================
 # definir variables para el paquete
 # =================================
-NAME="holamundo"        # nombre del paquete :corto, minúsculas, usar el símbolo - en vez de espacio, sin acentos
-VERSION="1.0.0"         # version: x.x.x (recomendable)
-ARCH="amd64"            # arch: amd64, i386, all
-SECTION="misc"          # cambiar de acuerdo a su programa, caso contrario dejarlo en misc
-PRIORITY="optional"     # cambiar el nivel de prioridad, aunque se recomienda opcional
-MAINTAINER="User Name <email@email.com>"    # cambiar por un nombre de usuario y su correo
-COPYRIGHT="GPL3"        # solo son permitidos licencias compatibles con Software Libre
-DESCRIPTION="Hola Mundo simple en Python3"          # agregar una descripción corta y breve del programa
+NAME="holamundo"        # Nombre corto, en minúsculas, sin espacios ni acentos. Usa guiones: ej. mi-paquete
+VERSION="1.0.0"         # Versión en formato semántico: x.y.z. Ej: 0.1.0, 2.0.1
+ARCH="amd64"            # Arquitectura: amd64 (64bit), i386 (32bit), all (independiente de hardware)
+SECTION="misc"          # Sección: misc, web, utils, editors, admin, net, games, etc.
+PRIORITY="optional"     # Prioridad: required, important, standard, optional (recomendado), extra
+MAINTAINER="User Name <email@email.com>"  # Nombre y correo del mantenedor del paquete
+COPYRIGHT="GPL-3.0-or-later"  # Licencia SPDX: MIT, GPL-3.0-or-later, Apache-2.0, BSD-3-Clause, etc.
+DESCRIPTION="Hola Mundo simple en Python3"  # Breve descripción (máx. ~80 caracteres), sin redundancia
 # =================================
 
 # eliminar archivos no relevantes para subir a github
@@ -343,15 +343,15 @@ fi
 # =================================
 # definir variables para el paquete
 # =================================
-NAME="mi-programa"      # nombre del paquete :corto, minúsculas, usar el símbolo - en vez de espacio, sin acentos
-VERSION="1.0.0"           # version: x.x.x (recomendable)
-ARCH="amd64"            # arch: amd64, i386, all
-SECTION="misc"          # cambiar de acuerdo a su programa, caso contrario dejarlo en misc
-PRIORITY="optional"     # cambiar el nivel de prioridad, aunque se recomienda opcional
-MAINTAINER="User Name <email@email.com>"    # cambiar por un nombre de usuario y su correo
-COPYRIGHT="GPL3"        # solo son permitidos licencias compatibles con Software Libre
-DESCRIPTION="Hola Mundo en C en PluriOS"          # agregar una descripción corta y breve del programa
-# ================================= 
+NAME="holamundo"        # Nombre corto, en minúsculas, sin espacios ni acentos. Usa guiones: ej. mi-paquete
+VERSION="1.0.0"         # Versión en formato semántico: x.y.z. Ej: 0.1.0, 2.0.1
+ARCH="amd64"            # Arquitectura: amd64 (64bit), i386 (32bit), all (independiente de hardware)
+SECTION="misc"          # Sección: misc, web, utils, editors, admin, net, games, etc.
+PRIORITY="optional"     # Prioridad: required, important, standard, optional (recomendado), extra
+MAINTAINER="User Name <email@email.com>"  # Nombre y correo del mantenedor del paquete
+COPYRIGHT="GPL-3.0-or-later"  # Licencia SPDX: MIT, GPL-3.0-or-later, Apache-2.0, BSD-3-Clause, etc.
+DESCRIPTION="Hola Mundo simple en Python3"  # Breve descripción (máx. ~80 caracteres), sin redundancia
+# =================================
 
 # definir variables para docker
 IMAGE_NAME="plurios-builder-${NAME}:24.04"
