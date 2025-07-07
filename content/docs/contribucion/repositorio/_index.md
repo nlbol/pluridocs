@@ -4,6 +4,8 @@ type: docs
 toc: true
 ---
 
+## Introducción 
+
 Esta sección es para establecer algunos estándares importantes que debe tener un repositorio para que este pueda funcionar en DEB y que sea incluido.  
 A continuación se mostrara algunos ejemplos útiles y esenciales para que puedan reutilizarlo y asi crear su paquete deb
 
@@ -14,6 +16,33 @@ A continuación se mostrara algunos ejemplos útiles y esenciales para que pueda
 - Todo paquete debe ser compatible con las versiones de herramientas disponibles en el sistema o en su repositorio actual (Ubuntu 24.04 LTS) de PluriOS, ej: Python3, Perl, C/C++ y otros.
 - No se aceptaran archivos binarios (compilados/ofuscados) en el repositorio, esto como medida de seguridad para que el/los binario(s) sea(n) generado(s) desde el repositorio DEB.
 
+## Clasificación de programas: CLI y GUI
+
+Esta sección es para brindar información sobre la clasificación del programa que desea desarrollar o integrar.
+
+### CLI (Command Line Interface)
+
+Interfaz en la que el usuario interactúa con el sistema mediante comandos de texto en una terminal.
+
+### GUI (Graphical User Interface)
+
+Interfaz en la que el usuario interactúa con el sistema a través de elementos gráficos como ventanas, iconos y menús.
+
+Dicho esto, si su proyecto esta en esta clasificación, entonces es necesario que en su repositorio tenga estos 2 archivos importantes dentro de un directorio llamado `extra` para que se integren:
+- MAME.desktop    (Lanzador)
+- NAME.svg        (Archivo logo en Formato SVG)
+
+### Ejemplos de CLI y GUI
+
+| Característica	| CLI (Consola)	| GUI (Gráfica) |
+|-----------------|---------------| --------------|
+| Interfaz	      | Texto	        | Gráfica (ventanas, botones) |
+| Entrada	        | Teclado (comandos)	| Ratón + teclado |
+| Nombre común	  | comando, utilidad de consola	| aplicación gráfica |
+| Ejemplo	| scp, rsync, nano	| gimp, vlc, evolution |
+
+
+
 ## Plantillas
 
 En esta sección se tendrá una muestra de los archivos "plantillas" que se puede reutilizar para crear un **paquete DEB** e información util para saber que modificar.
@@ -23,11 +52,11 @@ En esta sección se tendrá una muestra de los archivos "plantillas" que se pued
 En este directorio DEBIAN, es donde se encuentran los siguientes archivos comunes que todo paquete debe tener:
 - **control:** Contiene la información principal del paquete, como el nombre, versión, descripción, dependencias, mantenedor, sección, prioridad y arquitectura.
 
-- **conffiles:** Lista de archivos de configuración que no deben ser sobrescritos automáticamente durante una actualización.
+- **Scripts de mantenimiento:** Son scripts opcionales que permiten ejecutar acciones automáticas en diferentes etapas del ciclo de vida del paquete.
 
-- **md5sums:** Sumas de verificación MD5 de todos los archivos instalados, utilizadas para comprobar la integridad del paquete.
+- **conffiles (opcional):** Lista de archivos de configuración que no deben ser sobrescritos automáticamente durante una actualización. 
 
-- **Scripts de mantenimiento:** Son scripts opcionales que permiten ejecutar acciones automáticas en diferentes etapas del ciclo de vida del paquete
+- **md5sums (opcional):** Sumas de verificación MD5 de todos los archivos instalados, utilizadas para comprobar la integridad del paquete.
 
 ### Control
 
@@ -106,7 +135,7 @@ Esta plantilla solo es util si su programa tiene o utiliza interfaz gráfica (GU
 
 ```bash {filename=NAME.desktop}
 Name=CHANGE_NAME
-Comment=AGREGAR UN COMENTARIO DEL PROGRAMA
+Comment=CHANGE_COMMENT
 Version=CHANGE_VERSION
 Icon=CHANGE_NAME
 Exec=CHANGE_NAME
@@ -114,7 +143,7 @@ Terminal=false
 Type=Application
 Categories=PluriOS;
 ```
-> **Nota.-** Solo necesita cambiar la descripción de esta plantilla, el resto de información no se debe cambiar ya que son paquetes propios que van a ser intuidos en PluriOS.
+> **Nota.-** Se recomienda no cambiar estos valores para que los programas estén en la categoría de PluriOS.
 
 El script `build` detecta automáticamente si hay un lanzador creado y si hay un icono en formato SVG para que sea incluido, si esta condición no se cumple, entonces el paquete se creara sin un lanzador. 
 ### Versionado de Software
@@ -178,6 +207,12 @@ COPYRIGHT="GPL-3.0-or-later"  # Licencia SPDX: MIT, GPL-3.0-or-later, Apache-2.0
 DESCRIPTION="Hola Mundo simple en Python3"  # Breve descripción (máx. ~80 caracteres), sin redundancia
 # =================================
 
+# =================================
+# Variable para la descripción del lanzador
+# =================================
+COMMENT="Hola Mundo Simple para PluriOS"   # Descripción corta del programa 
+# =================================
+
 # eliminar archivos no relevantes para subir a github
 # estas instrucciones puede variar dependiendo los archivos innecesarios del proyecto
 rm -rf *.deb *.tar.gz ${NAME}_${ARCH}*  2>/dev/null
@@ -187,7 +222,7 @@ rm -rf *.deb *.tar.gz ${NAME}_${ARCH}*  2>/dev/null
 DIR_PACKAGE="${NAME}_${VERSION}_${ARCH}"
 
 # Crea el directorio de trabajo 
-mkdir -p $DIR_PACKAGE
+mkdir -p $DIR_PACKAGE $DIR_PACKAGE/usr/bin
 
 # Asigna permiso de ejecución al programa
 chmod +x $NAME
@@ -197,9 +232,7 @@ chmod +x $NAME
 # ================================
 # DEBIAN es un directorio importante que contiene todos los metadatos de un paquete DEB
 cp -r DEBIAN $DIR_PACKAGE/
-cp -r usr/ $DIR_PACKAGE/                  # directorio a copiar "usr/bin/"
-cp $NAME $DIR_PACKAGE/usr/bin/            # copia el programa a usr/bin
-
+cp $NAME $DIR_PACKAGE/usr/bin/            # copia el programa a /usr/bin/
 
 # ================================
 # verifica si existe un lanzador para integrarlo con su icono en formato SVG
@@ -211,6 +244,7 @@ if [ -f "$NAME.desktop" ] && [ -f "$NAME.svg" ]; then
   # Cambiar el nombre y versión del lanzador del programa  (si es que el programa usa un lanzador)
   sed -i "s/CHANGE_NAME/$NAME/g" "$DIR_PACKAGE/usr/share/applications/${NAME}.desktop"
   sed -i "s/CHANGE_VERSION/$VERSION/g" "$DIR_PACKAGE/usr/share/applications/${NAME}.desktop"
+  sed -i "s/CHANGE_COMMENT/$COMMENT/g" "$DIR_PACKAGE/usr/share/applications/${NAME}.desktop"
 fi
 
 # Calcula el tamaño en kilobytes (kB) de todo el directorio de trabajo excluyendo el directorio DEBIAN
@@ -236,7 +270,6 @@ done
 
 # Agrega propietarios y permisos correspondientes a los ficheros
 chown -R root:root $DIR_PACKAGE/
-chmod +x $DIR_PACKAGE/usr/bin/$NAME
 
 # Crea el paquete DEB a partir del directorio de trabajo
 dpkg-deb --build $DIR_PACKAGE/
@@ -288,10 +321,11 @@ Tome en cuenta que esta guía asume que no tiene docker instalado y es la primer
 ├── DEBIAN
 │   └── control
 ├── Dockerfile
-├── programa
-│   └── hola-mundo.c
-└── usr
-    └── bin
+├── extra
+│   ├── holamundo.desktop
+│   └── holamundo.svg
+└── src
+    └── holamundo.c
 ```
 
 **Dockerfile**
@@ -304,14 +338,15 @@ FROM ubuntu:24.04
 
 RUN apt update -qq && \
     DEBIAN_FRONTEND=noninteractive apt install -y gcc && \
-    apt clean && rm -rf /var/lib/apt/lists/*
+    apt clean && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
 
 CMD ["bash"]
 ```
 
-> Nota.- el script **build** creara la nueva imagen Docker con el tag: `plurios-builder:24.04` y este sera usado cuando se vuelva a ejecutar la compilación.
+> Nota.- el script **build** creara la nueva imagen Docker con el tag: `plurios-builder-${NAME}:24.04` y este sera usado cuando se vuelva a ejecutar la compilación.
 
 **hola-mundo.c**  
 
@@ -351,62 +386,84 @@ PRIORITY="optional"     # Prioridad: required, important, standard, optional (re
 MAINTAINER="User Name <email@email.com>"  # Nombre y correo del mantenedor del paquete
 COPYRIGHT="GPL-3.0-or-later"  # Licencia SPDX: MIT, GPL-3.0-or-later, Apache-2.0, BSD-3-Clause, etc.
 DESCRIPTION="Hola Mundo simple en Python3"  # Breve descripción (máx. ~80 caracteres), sin redundancia
+
+# Variable para la descripción del lanzador
+COMMENT="Hola Mundo Simple para PluriOS"   # Descripción corta del programa
 # =================================
 
 # definir variables para docker
 IMAGE_NAME="plurios-builder-${NAME}:24.04"
-SRC_DIR="programa"
-OUTPUT=$NAME
+SRC_DIR="src"
+DEBIAN_DIR="DEBIAN"
+OUTPUT_DIR="$(pwd)"
+EXTRA_DIR="extra"
+EXTRA_ARGS=()
 
 if [[ ! -d "$SRC_DIR" ]]; then
     echo -e "\033[0;31mError: source folder not found: $SRC_DIR\033[0m"
     exit 1
 fi
 
+if [[ ! -d "$DEBIAN_DIR" ]]; then
+    echo -e "\033[0;31mError: no se encontró el directorio:  $DEBIAN_DIR\033[0m"
+    exit 1
+fi
+
+if [[ -d "$EXTRA_DIR" ]]; then
+    echo -e "\033[1;34mSe encontro el directorio extra, se empaquetarán también.\033[0m"
+	EXTRA_ARGS+=(-v "$PWD/extra":/extra)
+fi
+
 if [[ "$(docker images -q $IMAGE_NAME 2>/dev/null)" == "" ]]; then
-    #echo -e "\033[0;33mBuilding Docker image '$IMAGE_NAME'...\033[0m"
     echo "Building Docker image '$IMAGE_NAME'..."
     docker build -t "$IMAGE_NAME" .
 fi
 
-echo -e "\033[1;37mCompiling $SRC_DIR...\033[0m"
-
 docker run --rm \
+    -e NAME="$NAME" \
+    -e VERSION="$VERSION" \
+    -e ARCH="$ARCH" \
+    -e SECTION="$SECTION" \
+    -e PRIORITY="$PRIORITY" \
+    -e MAINTAINER="$MAINTAINER" \
+    -e COPYRIGHT="$COPYRIGHT" \
+    -e DESCRIPTION="$DESCRIPTION" \
+    -e COMMENT="$COMMENT" \
     -v "$PWD/$SRC_DIR":/src \
-    -v "$PWD":/out \
-    "$IMAGE_NAME" \
-    bash -c "gcc /src/$NAME.c -o /out/$OUTPUT"
+    -v "$PWD/$DEBIAN_DIR":/debian \
+    -v "$OUTPUT_DIR":/out \
+    "${EXTRA_ARGS[@]}" \
+    "$IMAGE_NAME" bash -c '
+set -e
+cd /tmp
 
-echo -e "\033[0;32mBinary created: $OUTPUT\033[0m"  
-
-# Crear el nombre del directorio de trabajo 
-# Ej: mi-programa_0.3_amd64
 DIR_PACKAGE="${NAME}_${VERSION}_${ARCH}"
+mkdir -p "$DIR_PACKAGE/usr/bin" "$DIR_PACKAGE/DEBIAN"
 
-# Crea el directorio de trabajo 
-mkdir -p $DIR_PACKAGE
+echo "Compilando /src/${NAME}.c → /usr/bin/${NAME} ..."
+gcc /src/${NAME}.c -o "$DIR_PACKAGE/usr/bin/$NAME"
 
-# Copia y pega los directorios necesarios para el paquete
-# DEBIAN es un directorio importante que contiene todos los metadatos de un paquete DEB
-cp -r DEBIAN $DIR_PACKAGE/
-cp -r usr/ $DIR_PACKAGE/                  # directorio a copiar "usr/bin/"
-cp $OUTPUT $DIR_PACKAGE/usr/bin/          # copia el binario compilado con el nombre establecido para el paquete
+echo "Copiando DEBIAN/ ..."
+cp -r /debian/* "$DIR_PACKAGE/DEBIAN/"
 
 # verifica si existe un lanzador para integrarlo con su icono en formato SVG
-if [ -f "$NAME.desktop" ] && [ -f "$NAME.svg" ]; then
-  mkdir -p $DIR_PACKAGE/{usr/share/applications/,usr/share/icons/hicolor/scalable/apps/}
-  cp $NAME.desktop $DIR_PACKAGE/usr/share/applications/
-  cp $NAME.svg $DIR_PACKAGE/usr/share/icons/hicolor/scalable/apps/
+if [ -f "/extra/${NAME}.desktop" ] && [ -f "/extra/${NAME}.svg" ]; then
+    echo "Copiando .desktop y .svg al paquete ..."
+    mkdir -p "$DIR_PACKAGE/usr/share/applications" "$DIR_PACKAGE/usr/share/icons/hicolor/scalable/apps"
+    cp "/extra/${NAME}.desktop" "$DIR_PACKAGE/usr/share/applications/"
+    cp "/extra/${NAME}.svg" "$DIR_PACKAGE/usr/share/icons/hicolor/scalable/apps/"
 
-  # Cambia el nombre y versión del lanzador del programa  (si es que el programa usa un lanzador)
-  sed -i "s/CHANGE_NAME/$NAME/g" "$DIR_PACKAGE/usr/share/applications/${NAME}.desktop"
-  sed -i "s/CHANGE_VERSION/$VERSION/g" "$DIR_PACKAGE/usr/share/applications/${NAME}.desktop"
+  # Cambiar el nombre y versión del lanzador del programa  (si es que el programa usa un lanzador)
+    sed -i "s/CHANGE_NAME/$NAME/g" "$DIR_PACKAGE/usr/share/applications/${NAME}.desktop"
+    sed -i "s/CHANGE_VERSION/$VERSION/g" "$DIR_PACKAGE/usr/share/applications/${NAME}.desktop"
+    sed -i "s/CHANGE_COMMENT/$COMMENT/g" "$DIR_PACKAGE/usr/share/applications/${NAME}.desktop"
 fi
 
 # Calcula el tamaño en kilobytes (kB) de todo el directorio de trabajo excluyendo el directorio DEBIAN
-SIZE=$(du -ks --exclude=DEBIAN "$DIR_PACKAGE/" | awk '{print $1}')
+SIZE=$(du -ks --exclude=DEBIAN "$DIR_PACKAGE/" | awk "{print \$1}")
 
 # Cambia información del archivo control como ser: nombre, versión, tamaño
+echo "Actualizando control ..."
 sed -i "s/CHANGE_NAME/$NAME/g" "$DIR_PACKAGE/DEBIAN/control"
 sed -i "s/CHANGE_VERSION/$VERSION/g" "$DIR_PACKAGE/DEBIAN/control"
 sed -i "s/CHANGE_ARCH/$ARCH/g" "$DIR_PACKAGE/DEBIAN/control"
@@ -420,15 +477,15 @@ sed -i "s/CHANGE_SIZE/$SIZE/g" "$DIR_PACKAGE/DEBIAN/control"
 # Asigna permisos de ejecución a los archivos preinst, postinst, prerm, postrm
 for script in postinst preinst postrm prerm; do
   if [ -f "$DIR_PACKAGE/DEBIAN/$script" ]; then
-    chmod 755 $DIR_PACKAGE/DEBIAN/$script
+    chmod 755 "$DIR_PACKAGE/DEBIAN/$script"
   fi
 done
 
-# Agregar propietarios y permisos correspondientes a los ficheros
-chown -R root:root $DIR_PACKAGE/
+# Agrega propietarios y permisos correspondientes a los ficheros
+chown -R root:root "$DIR_PACKAGE/"
 
 # Crea el paquete DEB a partir del directorio de trabajo
-dpkg-deb --build $DIR_PACKAGE/
-```
+dpkg-deb --build "$DIR_PACKAGE" "/out/${DIR_PACKAGE}.deb"
 
-Este ejemplo podrá realizar la compilación del proyecto en un contenedor docker para evitar dependencias de un sistema diferente, versiones de librerías, entre otros.
+echo -e "\033[0;32mDEB creado en ./${DIR_PACKAGE}.deb\033[0m"
+'
