@@ -205,12 +205,9 @@ PRIORITY="optional"     # Prioridad: required, important, standard, optional (re
 MAINTAINER="User Name <email@email.com>"  # Nombre y correo del mantenedor del paquete
 COPYRIGHT="GPL-3.0-or-later"  # Licencia SPDX: MIT, GPL-3.0-or-later, Apache-2.0, BSD-3-Clause, etc.
 DESCRIPTION="Hola Mundo simple en Python3"  # Breve descripción (máx. ~80 caracteres), sin redundancia
-# =================================
 
-# =================================
 # Variable para la descripción del lanzador
-# =================================
-COMMENT="Hola Mundo Simple para PluriOS"   # Descripción corta del programa 
+COMMENT="Hola Mundo Simple para PluriOS"   # Descripción corta del programa
 # =================================
 
 # eliminar archivos no relevantes para subir a github
