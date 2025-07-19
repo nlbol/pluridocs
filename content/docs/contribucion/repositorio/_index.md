@@ -47,6 +47,46 @@ Dicho esto, si su proyecto esta en esta clasificación, entonces es necesario qu
 
 En esta sección se tendrá una muestra de los archivos "plantillas" que se puede reutilizar para crear un **paquete DEB** e información util para saber que modificar.
 
+### MAINTAINER (Archivo)
+
+Este archivo es importante para la construcción de paquete, ya que cuenta con variables importantes 
+
+```bash {filename=MAINTAINER}
+# =================================
+# definir variables para el paquete
+# =================================
+
+# Nombre corto, en minúsculas, sin espacios ni acentos. Usa guiones: ej. mi-paquete
+NAME="holamundo"
+
+# Versión en formato semántico: x.y.z. Ej: 0.1.0, 2.0.1
+VERSION="1.0.0"
+
+# Arquitectura: amd64 (64bit), i386 (32bit), all (independiente de hardware)
+ARCH="amd64"
+
+# Sección: misc, web, utils, editors, admin, net, games, etc.
+SECTION="misc"
+
+# Prioridad: required, important, standard, optional (recomendado), extra
+PRIORITY="optional"
+
+# Nombre y correo del mantenedor del paquete
+MAINTAINER="User Name <email@email.com>"
+
+# Licencia SPDX: MIT, GPL-3.0-or-later, Apache-2.0, BSD-3-Clause, etc.
+COPYRIGHT="GPL-3.0-or-later"
+
+# Breve descripción (máx. ~80 caracteres), sin redundancia
+DESCRIPTION="Hola Mundo simple en Python3"
+
+# Variable para la descripción del lanzador
+# Descripción corta del programa
+COMMENT="Hola Mundo Simple para PluriOS"
+```
+
+> Nota.- Este archivo debe estar en el repositorio, no debe incluirse en el `.gitignore`
+
 ### DEBIAN (directorio)
 
 En este directorio DEBIAN, es donde se encuentran los siguientes archivos comunes que todo paquete debe tener:
@@ -194,21 +234,9 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-# =================================
-# definir variables para el paquete
-# =================================
-NAME="holamundo"        # Nombre corto, en minúsculas, sin espacios ni acentos. Usa guiones: ej. mi-paquete
-VERSION="1.0.0"         # Versión en formato semántico: x.y.z. Ej: 0.1.0, 2.0.1
-ARCH="amd64"            # Arquitectura: amd64 (64bit), i386 (32bit), all (independiente de hardware)
-SECTION="misc"          # Sección: misc, web, utils, editors, admin, net, games, etc.
-PRIORITY="optional"     # Prioridad: required, important, standard, optional (recomendado), extra
-MAINTAINER="User Name <email@email.com>"  # Nombre y correo del mantenedor del paquete
-COPYRIGHT="GPL-3.0-or-later"  # Licencia SPDX: MIT, GPL-3.0-or-later, Apache-2.0, BSD-3-Clause, etc.
-DESCRIPTION="Hola Mundo simple en Python3"  # Breve descripción (máx. ~80 caracteres), sin redundancia
+# importar variables MAINTAINER
+. MAINTAINER || exit 1
 
-# Variable para la descripción del lanzador
-COMMENT="Hola Mundo Simple para PluriOS"   # Descripción corta del programa
-# =================================
 
 # eliminar archivos no relevantes para subir a github
 # estas instrucciones puede variar dependiendo los archivos innecesarios del proyecto
@@ -219,19 +247,40 @@ rm -rf *.deb *.tar.gz ${NAME}_${ARCH}*  2>/dev/null
 DIR_PACKAGE="${NAME}_${VERSION}_${ARCH}"
 
 # Crea el directorio de trabajo 
-mkdir -p $DIR_PACKAGE $DIR_PACKAGE/usr/bin
+mkdir -p $DIR_PACKAGE 
 
-# Asigna permiso de ejecución al programa
-chmod +x $NAME
+# Crea el directorio DEBIAN
+mkdir -p  $DIR_PACKAGE/DEBIAN/
+
+# Genera el archivo control de DEBIAN
+cat <<EOF > $DIR_PACKAGE/DEBIAN/control
+Package: CHANGE_NAME
+Version: CHANGE_VERSION
+Architecture: CHANGE_ARCH
+Section: CHANGE_SECTION
+Priority: CHANGE_PRIORITY
+Installed-Size: CHANGE_SIZE
+Maintainer: CHANGE_MAINTAINER
+Copyright: CHANGE_COPYRIGHT
+Description: CHANGE_DESCRIPTION
+EOF
+
 # ================================
 # Copia y pega los directorios necesarios para el paquete
 # modifique esta sección para copiar los archivos necesarios de su código al directorio de trabajo $DIR_PACKAGE
 # ================================
-# DEBIAN es un directorio importante que contiene todos los metadatos de un paquete DEB
-cp -r DEBIAN $DIR_PACKAGE/
-cp $NAME $DIR_PACKAGE/usr/bin/            # copia el programa a /usr/bin/
+
+mkdir -p $DIR_PACKAGE/usr/bin/
+
+cp $NAME $DIR_PACKAGE/usr/bin/
+
+chmod +x $NAME
+
+mv $DIR_PACKAGE/usr/bin/
+
 
 # ================================
+
 # verifica si existe un lanzador para integrarlo con su icono en formato SVG
 if [ -f "$NAME.desktop" ] && [ -f "$NAME.svg" ]; then
   mkdir -p $DIR_PACKAGE/{usr/share/applications/,usr/share/icons/hicolor/scalable/apps/}
